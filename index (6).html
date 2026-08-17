@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Darwinbox · Professional Services Play Picker</title>
+<style>
+  :root{
+    --purple:#4A1E6B; --purple2:#6C2E9C; --teal:#0E7C7B; --ink:#1A1A2E;
+    --paper:#FCFBFE; --surface:#F4EFFA; --surface2:#EAE2F2; --line:#DDD3EA;
+    --amber:#8A5A00; --amberbg:#FBF3E8; --green:#0E7C5B; --greenbg:#E9F6EF;
+    --muted:#6B6478; --shadow:0 1px 2px rgba(28,12,46,.06),0 8px 24px rgba(28,12,46,.06);
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Charter,Georgia,serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{font-family:var(--sans);color:var(--ink);background:
+    radial-gradient(1200px 600px at 100% -10%, #F1E9FA 0%, transparent 55%),
+    radial-gradient(900px 500px at -10% 110%, #E9F4F4 0%, transparent 55%), var(--paper);
+    line-height:1.5;-webkit-font-smoothing:antialiased;padding:0 0 56px}
+  a{color:var(--purple2)}
+  header{padding:26px 26px 18px;max-width:1180px;margin:0 auto}
+  .eyebrow{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+  h1{font-size:27px;margin:8px 0 4px;letter-spacing:-.01em;color:var(--purple)}
+  .sub{color:var(--muted);font-size:14.5px;max-width:820px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .chip{font:500 11.5px/1 var(--mono);color:var(--purple2);background:var(--surface);
+    border:1px solid var(--line);border-radius:999px;padding:6px 10px;letter-spacing:.02em}
+  .wrap{max-width:1180px;margin:8px auto 0;padding:0 26px;display:grid;
+    grid-template-columns:388px 1fr;gap:22px;align-items:start}
+  @media(max-width:880px){.wrap{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .console{padding:20px} .console h2,.out h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 14px;font-weight:700}
+  label.f{display:block;margin:0 0 15px}
+  label.f .lab{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:0 0 6px;color:var(--ink)}
+  label.f .step{font:700 11px/1 var(--mono);color:#fff;background:var(--purple);border-radius:6px;
+    width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center}
+  label.f .opt{font:600 10px/1 var(--mono);color:var(--teal);background:#E6F1F1;border-radius:5px;padding:3px 6px;letter-spacing:.04em}
+  select,input[type=text]{width:100%;font-family:var(--sans);font-size:14.5px;color:var(--ink);background:#fff;
+    border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236C2E9C' stroke-width='1.6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 13px center;transition:border-color .15s,box-shadow .15s}
+  input[type=text]{background-image:none}
+  select:focus,input:focus{outline:none;border-color:var(--purple2);box-shadow:0 0 0 3px rgba(108,46,156,.14)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .variant{display:flex;gap:6px}
+  .vbtn{flex:1;font:600 13px/1 var(--sans);padding:9px;border:1.5px solid var(--line);border-radius:9px;
+    background:#fff;color:var(--muted);cursor:pointer;transition:.15s}
+  .vbtn[aria-pressed=true]{background:var(--surface);border-color:var(--purple2);color:var(--purple)}
+  .vbtn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(108,46,156,.18)}
+  .applyRow{margin-top:18px;border-top:1px solid var(--line);padding-top:16px}
+  button.apply{width:100%;font:700 15px/1 var(--sans);color:#fff;background:var(--purple);border:none;
+    border-radius:11px;padding:14px;cursor:pointer;transition:.15s;letter-spacing:.01em}
+  button.apply:hover:not(:disabled){background:var(--purple2)}
+  button.apply:disabled{opacity:.4;cursor:not-allowed}
+  button.apply:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(108,46,156,.25)}
+  .dirty{display:none;align-items:center;gap:7px;font-size:12.5px;color:var(--amber);margin-top:10px;
+    background:var(--amberbg);border:1px solid #ECD9B8;border-radius:9px;padding:8px 11px}
+  .dirty.show{display:flex}
+  .hint{font-size:12px;color:var(--muted);margin:12px 0 0}
+  .out{padding:20px}
+  .out-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  button.act{font:600 12.5px/1 var(--sans);border:1.5px solid var(--purple2);color:#fff;background:var(--purple2);
+    border-radius:9px;padding:9px 12px;cursor:pointer;transition:.15s}
+  button.act.ghost{background:#fff;color:var(--purple2)}
+  button.act:hover{filter:brightness(1.04)} button.act:disabled{opacity:.45;cursor:not-allowed}
+  button.act:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(108,46,156,.22)}
+  .subjbar{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin-bottom:12px}
+  .subjbar .k{font:600 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .subjbar .v{font-weight:600;font-size:15px;color:var(--ink);flex:1}
+  .mini{font:600 11px/1 var(--sans);border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;color:var(--purple2)}
+  .draft{font-family:var(--serif);font-size:15.5px;line-height:1.62;color:#23202c;white-space:pre-wrap;background:#fff;
+    border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:0 10px 10px 0;padding:16px 18px;min-height:120px}
+  .merge{background:#FFF3D6;border-radius:4px;padding:0 3px;font-style:italic;color:#6b5200}
+  .empty{color:var(--muted);font-family:var(--sans);font-style:normal;border-left-color:var(--line)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+  .panel h3{margin:0 0 10px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+  .kv{font-size:13px;margin:0 0 9px} .kv .k{font:600 11px/1.3 var(--mono);letter-spacing:.03em;color:var(--purple2);display:block;margin-bottom:2px}
+  .kv .v{color:var(--ink)}
+  .tag{display:inline-block;font:600 11px/1 var(--mono);border-radius:6px;padding:4px 7px;margin-right:5px}
+  .tag.hr{background:var(--surface);color:var(--purple)} .tag.it{background:#E6F1F1;color:var(--teal)}
+  .gauge{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .ring{--p:0;width:54px;height:54px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--green) calc(var(--p)*1%), var(--surface2) 0);display:flex;align-items:center;justify-content:center}
+  .ring i{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-style:normal}
+  .ring b{font:700 15px/1 var(--mono);color:var(--ink)} .ring small{font:600 8px/1 var(--mono);color:var(--muted)}
+  .glabel{font-size:12.5px;color:var(--muted)} .glabel b{color:var(--ink)}
+  ul.checks{list-style:none;margin:0;padding:0}
+  ul.checks li{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;padding:5px 0;color:#2a2733}
+  .dot{flex:none;width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+    font:700 10px/1 var(--sans);color:#fff;margin-top:1px}
+  .dot.ok{background:var(--green)} .dot.warn{background:var(--amber)}
+  .note{font-size:12px;color:var(--muted);background:var(--amberbg);border:1px solid #ECD9B8;border-left:4px solid var(--amber);
+    border-radius:0 10px 10px 0;padding:11px 13px;margin-top:16px}
+  .note b{color:var(--amber)}
+  footer{max-width:1180px;margin:22px auto 0;padding:0 26px;color:var(--muted);font-size:12px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);
+    color:#fff;font-size:13px;font-weight:600;padding:11px 16px;border-radius:10px;box-shadow:var(--shadow);transition:.2s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+  /* ===== Account intelligence ===== */
+  .acct{margin:2px 0 15px;border:1.5px dashed var(--line);border-radius:12px;padding:13px;background:linear-gradient(180deg,#FBFAFD,#fff)}
+  .acct .ahead{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .acct .ahead .step{font:700 11px/1 var(--mono);color:#fff;background:var(--teal);border-radius:6px;padding:4px 7px}
+  .acct .ahead b{font:700 13px/1 var(--sans);color:var(--ink)}
+  .acct .ahead .opt{font:600 10px/1 var(--mono);color:var(--teal);background:#E6F1F1;border-radius:5px;padding:3px 6px;letter-spacing:.04em}
+  .acct .arow{display:grid;grid-template-columns:1fr 118px;gap:8px}
+  .acct input{width:100%;font:500 13px/1 var(--sans);padding:9px 10px;border:1.5px solid var(--line);border-radius:9px;background:#fff;box-sizing:border-box}
+  .acct .studyBtn{font:700 12.5px/1 var(--sans);color:#fff;background:var(--teal);border:none;border-radius:9px;padding:0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .acct .studyBtn:hover:not(:disabled){filter:brightness(1.08)}
+  .acct .studyBtn:disabled{opacity:.45;cursor:not-allowed}
+  .acct .ahint{font-size:11px;color:var(--muted);margin:8px 0 0;line-height:1.5}
+  .spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+  .astatus{font:600 12px/1.5 var(--sans);margin:10px 0 0;color:var(--purple2);display:none}
+  .astatus.show{display:block}
+  .tcards{margin-top:11px;display:flex;flex-direction:column;gap:9px}
+  .tcard{border:1.5px solid var(--line);border-radius:11px;padding:11px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .tcard.sel{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,124,123,.12)}
+  .tcard .tt{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+  .tcard .ty{font:700 10px/1 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--purple);background:var(--surface);border-radius:5px;padding:3px 6px}
+  .badge{font:700 9.5px/1 var(--mono);letter-spacing:.03em;border-radius:5px;padding:3px 6px}
+  .badge.fresh{color:#0B7A3B;background:#E4F6EC} .badge.old{color:#9A6400;background:#FCEFD6}
+  .badge.conf{color:var(--teal);background:#E6F1F1}
+  .tcard .hl{font:600 13px/1.4 var(--sans);color:var(--ink);margin:0 0 5px}
+  .tcard .intro{font:500 12.5px/1.5 var(--serif,Georgia);color:#333;background:var(--surface);border-radius:8px;padding:8px 10px;margin:0 0 8px}
+  .tcard .meta{font-size:11px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+  .tcard .meta a{color:var(--purple2);text-decoration:underline}
+  .tcard .warnline{font:600 11px/1.4 var(--sans);color:#9A6400;margin:0 0 8px}
+  .tcard .useBtn{font:700 12px/1 var(--sans);color:#fff;background:var(--purple);border:none;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .tcard .useBtn:hover{background:var(--purple2)} .tcard.sel .useBtn{background:var(--teal)}
+  .manual{margin-top:11px;display:none} .manual.show{display:block}
+  .manual textarea{width:100%;font:500 12.5px/1.5 var(--sans);padding:9px 10px;border:1.5px solid var(--line);border-radius:9px;box-sizing:border-box;resize:vertical;min-height:54px}
+  .manual .mrow{display:flex;gap:8px;margin-top:7px}
+  .manual button{font:700 12px/1 var(--sans);border-radius:8px;padding:8px 12px;cursor:pointer;border:1.5px solid var(--purple2)}
+  .manual .mUse{color:#fff;background:var(--purple2)} .manual .mTog{color:var(--purple2);background:#fff}
+  .liveOn{margin-top:10px;font:600 12px/1.4 var(--sans);color:#0B7A3B;background:#E4F6EC;border-radius:8px;padding:8px 10px;display:none;align-items:center;justify-content:space-between;gap:8px}
+  .liveOn.show{display:flex}
+  .liveOn .clr{font:700 11px/1 var(--sans);color:var(--purple2);background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 8px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Darwinbox · US West · GTM Enablement</div>
+  <h1>Professional Services Play Picker</h1>
+  <p class="sub">Pick the <b>sub-segment</b>, the <b>employee band</b>, and the <b>prospect's title</b> — add an <b>account trigger</b> if you have one — then tap <b>Apply</b>. The problem in the email is written for that <b>specific sub-industry through that role's lens</b> — a VP HR at a legal firm reads nothing like a VP HR in accounting or BPO. The email never names their headcount or segment. Every problem sets up the same core Cortex value — sensing workforce signals and acting before they get expensive — while headcount rewrites the opening line and sub-segment rewrites the problem. When you add a trigger, it now bridges logically into that problem instead of sitting on top of it.</p>
+  <div class="chips">
+    <span class="chip">Signal-first problem per sub-segment × role</span>
+    <span class="chip">No headcount or segment named</span>
+    <span class="chip">Trigger at account · persona at template</span>
+    <span class="chip">★ Live account trigger study (in Claude)</span>
+    <span class="chip">Darwinbox Cortex proof · persona-matched</span>
+    <span class="chip">Soft resonance CTA</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="card console" aria-label="Inputs">
+    <h2>Set the play</h2>
+    <label class="f" for="seg"><span class="lab"><span class="step">1</span>Sub-segment cluster</span><select id="seg"></select></label>
+    <label class="f" for="size"><span class="lab"><span class="step">2</span>Employee headcount</span><select id="size"></select></label>
+    <label class="f" for="title"><span class="lab"><span class="step">3</span>Prospect title / designation</span><select id="title"></select></label>
+    <label class="f" for="trig"><span class="lab"><span class="step">4</span>Account trigger <span class="opt">OPTIONAL</span></span><select id="trig"></select></label>
+
+    <div class="acct" id="acct">
+      <div class="ahead"><span class="step">★</span><b>Study a live account trigger</b><span class="opt">OPTIONAL</span></div>
+      <div class="arow">
+        <input type="text" id="acctCompany" placeholder="Company name (e.g. Acme Advisory)" autocomplete="off" />
+        <button class="studyBtn" id="studyBtn" disabled><span id="studyLabel">Study</span></button>
+      </div>
+      <input type="text" id="acctDomain" placeholder="Website / domain (optional, sharpens the search)" autocomplete="off" style="margin-top:8px" />
+      <p class="ahint">Looks up recent, verifiable account triggers (funding, M&amp;A, new CHRO/CIO, expansion, RIF-then-rehire, IPO, earnings, launches), validates each against a live source with a 90-day freshness check, and lets you fold the validated one into the email intro. <b>Verify the source before sending.</b></p>
+      <p class="astatus" id="astatus"></p>
+      <div class="tcards" id="tcards"></div>
+      <div class="liveOn" id="liveOn"><span id="liveOnTxt"></span><button class="clr" id="liveClr">Clear · use industry pattern</button></div>
+      <div class="manual" id="manual">
+        <span class="lab" style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Paste a verified trigger line (works anywhere, offline)</span>
+        <textarea id="manualText" placeholder="e.g. Saw Acme just opened its first Texas office — exciting stretch."></textarea>
+        <div class="mrow"><button class="mUse" id="manualUse">Use this line</button><button class="mTog" id="manualTog">Hide</button></div>
+      </div>
+      <p class="ahint" style="margin-top:9px"><a href="#" id="manualToggle">Or paste a verified trigger manually →</a></p>
+    </div>
+
+    <div class="row2" style="margin-bottom:15px">
+      <label class="f" style="margin:0" for="sender"><span class="lab" style="margin-bottom:6px">Sender name</span><input type="text" id="sender" placeholder="Your name" /></label>
+      <label class="f" style="margin:0" for="signoff"><span class="lab" style="margin-bottom:6px">Sign-off</span>
+        <select id="signoff"><option value="Business Development, Darwinbox">Business Development, Darwinbox</option><option value="BDR Manager, US West, Darwinbox">BDR Manager, US West, Darwinbox</option></select></label>
+    </div>
+
+    <span class="lab" style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Angle variant</span>
+    <div class="variant" role="group" aria-label="Variant">
+      <button class="vbtn" id="vA" aria-pressed="true">A · proof &amp; CTA</button>
+      <button class="vbtn" id="vB" aria-pressed="false">B · alternate</button>
+    </div>
+
+    <div class="applyRow">
+      <button class="apply" id="applyBtn" disabled>Apply — generate email</button>
+      <div class="dirty" id="dirty"><span>●</span> Selections changed — tap Apply to update the email.</div>
+    </div>
+    <p class="hint">9 segments × 4 bands × 11 titles × 8 triggers, plus live account triggers. The problem is drawn from a 54-cell role × sub-segment matrix, each written to set up the Cortex value; HR personas hear the signal→reflex story, IT hears the context graph. A trigger bridges into the problem via a connecting line.</p>
+  </section>
+
+  <section class="card out" aria-live="polite">
+    <div class="out-head">
+      <h2>Generated first-touch</h2>
+      <div class="btns">
+        <button class="act ghost" id="copySubj" disabled>Copy subject</button>
+        <button class="act" id="copyEmail" disabled>Copy email</button>
+      </div>
+    </div>
+    <div class="subjbar"><span class="k">Subject</span><span class="v" id="subjOut">—</span><span class="mini" id="subjWords">0w</span></div>
+    <div class="draft empty" id="draft">Make your selections, then tap <b>Apply</b> to generate a play.</div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Why this play</h3>
+        <div class="kv"><span class="k">Buyer role · altitude</span><span class="v" id="rRole">—</span></div>
+        <div class="kv"><span class="k">Intro anchored to</span><span class="v" id="rTrig">—</span></div>
+        <div class="kv"><span class="k">Problem · driven by sub-segment</span><span class="v" id="rProb">—</span></div>
+        <div class="kv"><span class="k">How size &amp; segment are used</span><span class="v" id="rSeg">—</span></div>
+        <div class="kv"><span class="k">Proof · CTA</span><span class="v" id="rProof">—</span></div>
+      </div>
+      <div class="panel">
+        <h3>On-spec check</h3>
+        <div class="gauge"><div class="ring" id="ring"><i><b id="gW">0</b><small>WORDS</small></i></div>
+          <div class="glabel">Body target <b>60–90</b><br><span id="gMsg">awaiting Apply</span></div></div>
+        <ul class="checks" id="checks"></ul>
+      </div>
+    </div>
+    <div class="note"><b>Before you send:</b> fill the merge fields — <span class="merge">[First Name]</span>, <span class="merge">[Company]</span>, and any trigger detail like <span class="merge">[new markets]</span> or <span class="merge">[round]</span>. Proof points come from your SDR Messaging Framework deck (incl. the Traveloka figures). The "2026 Gartner Leader, Talent Acquisition Suites" line is held out pending confirmation, since the v7 bank lists a 2025 MQ Challenger for Cloud HCM Suites — confirm which is current before adding it.</div>
+  </section>
+</div>
+
+<footer>Three accountabilities, not twelve titles. Problem written for the sub-industry, not collated across all of professional services. Closed proof bank — no invented numbers.</footer>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+// ===== Play Picker v6 — five-line Cortex narrative =====
+// L1 open (fresh trigger, else sub-segment scene) · L2 tension · L3 Cortex resolution ·
+// L4 credibility (4.5M / 1,400 / 130 + Gartner) · L5 warm CTA. No em/en dashes in the body.
+
+const SIZES = [
+  { key:'S1', label:'1,000–2,500',  tier:'lean' },
+  { key:'S2', label:'2,500–5,000',  tier:'lean' },
+  { key:'S3', label:'5,000–10,000', tier:'ent' },
+  { key:'S4', label:'10,000+',      tier:'ent' }
+];
+const SI = { S1:0, S2:1, S3:2, S4:3 };
+
+const SEGMENTS = {
+  'it-services': { label:'IT Services / Software Services' },
+  'consulting':  { label:'Technology / Management Consulting' },
+  'fintech':     { label:'Digital Transformation / FinTech Services' },
+  'accounting':  { label:'Accounting / Audit / Tax' },
+  'legal':       { label:'Legal Services' },
+  'engineering': { label:'Engineering / Architecture' },
+  'creative':    { label:'Marketing / Creative / Advertising' },
+  'bpo-kpo':     { label:'BPO / KPO' },
+  'staffing':    { label:'Staffing & Recruiting' }
+};
+
+// ===== L1 scene library: SCENES[segment][center] = {lean, ent} =====
+// HR   -> a key person heading out, signals scattered and unseen
+// HRIT -> a change with no template, handled by hand
+// IT   -> a bolted-on agent acting without any grasp of the org
+const SCENES = {
+  'it-services':{
+    HR:{ lean:'A lead engineer on a billable project is quietly on their way out, and the skills shift, the missed promotion, and the drop in activity were all in the system weeks earlier.',
+         ent:'Three engineers leave one delivery account inside a month, and the skills gaps, the missed promotions, and the activity drops were all in the system, just never in one place.' },
+    HRIT:{ lean:'A new delivery center opens and certifications, transfer rules, and approval chains all change at once, handled by hand across a dozen tickets.',
+           ent:'Several delivery centers stand up across regions at once, and every certification rule, transfer, and approval chain gets reconciled by hand.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can move an engineer in a way that breaks a client data rule it never knew existed.',
+         ent:'Bolt an AI assistant onto the HR stack and it can move engineers across accounts in ways that break client data rules it never knew existed.' }
+  },
+  'consulting':{
+    HR:{ lean:'A senior consultant is heading for the door, and the utilization dip, the missed staffing, and the comp gap that predicted it were all in the system weeks earlier.',
+         ent:'Two partner-track consultants resign from one practice inside a month, and the signals that predicted it sat across staffing, comp, and utilization, never together.' },
+    HRIT:{ lean:'A new engagement model launches and rate cards, staffing rules, and approvals all change at once, worked around by hand.',
+           ent:'A reorg reshapes practices across regions, and every rate, staffing rule, and approval chain gets rebuilt manually with no template.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can staff a consultant against a conflict policy it never knew existed.',
+         ent:'Bolt an AI assistant onto the HR stack and it can staff consultants across the firm against conflict policies it never knew existed.' }
+  },
+  'fintech':{
+    HR:{ lean:'A scarce compliance specialist is about to leave, and the pay gap, the manager change, and the disengagement were all in the system weeks before.',
+         ent:'Three specialists leave one team in a quarter, and the pay gaps, the manager changes, and the disengagement signals sat in different systems the whole time.' },
+    HRIT:{ lean:'A new regulation lands and approval chains, data rules, and workflows all change at once, handled through consultant tickets.',
+           ent:'New rules hit several entities at once, and each approval chain and data rule gets reconfigured by hand with nothing audit-ready.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can approve a transfer that breaks a leave rule it never knew existed.',
+         ent:'Bolt an AI assistant onto the HR stack and it can approve transfers that break leave and residency rules it never knew existed.' }
+  },
+  'accounting':{
+    HR:{ lean:'A licensed senior is burning out through busy season and about to resign, and the overtime, the missed comp, and the disengagement were all in the system weeks earlier.',
+         ent:'A cluster of seniors leaves right after busy season, and the overtime spikes, the pay gaps, and the disengagement that predicted it sat across separate systems.' },
+    HRIT:{ lean:'Busy season spins up seasonal hires, credential tracking, and shifting approvals all at once, handled by hand with no template.',
+           ent:'Busy season hits every office at once, and seasonal onboarding, credential tracking, and approvals all get reconciled manually.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can act on a credential rule it never knew existed.',
+         ent:'Bolt an AI assistant onto the HR stack and it can act across offices on credential rules it never knew existed.' }
+  },
+  'legal':{
+    HR:{ lean:'A senior associate resigns on a Tuesday, though the pay gap, the manager change, and the engagement dip were all in the system weeks earlier.',
+         ent:'Three associates resign from one practice group in a month, and the pay gaps, the manager change, and the engagement dips were all in the system, never in one place.' },
+    HRIT:{ lean:'A lateral class arrives and bar admissions, CLE tracking, and matter approvals all change at once, handled by hand.',
+           ent:'A multi-office lateral wave lands at once, and every bar admission, CLE rule, and matter approval gets worked manually with no template.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can touch matter-restricted data under a rule it never knew existed.',
+         ent:'Bolt an AI assistant onto the HR stack and it can touch matter-restricted data under confidentiality rules it never knew existed.' }
+  },
+  'engineering':{
+    HR:{ lean:'A licensed engineer nearing retirement is about to leave, and the project load, the missed knowledge transfer, and the disengagement were all in the system weeks earlier.',
+         ent:'Several licensed staff exit one office in a quarter, and the retirement signals, the project overloads, and the disengagement sat across systems no one read together.' },
+    HRIT:{ lean:'A project in a new jurisdiction changes license rules, certifications, and approvals all at once, handled by hand.',
+           ent:'Projects open across jurisdictions at once, and every license rule, certification, and approval chain gets reconciled manually.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can assign someone to a project their license does not cover.',
+         ent:'Bolt an AI assistant onto the HR stack and it can assign people across jurisdictions to projects their licenses do not cover.' }
+  },
+  'creative':{
+    HR:{ lean:'A lead on a key account is quietly checking out, and the burnout signals, the missed recognition, and the comp gap were all in the system weeks earlier.',
+         ent:'Three people leave one account team in a month, and the burnout, the comp gaps, and the disengagement that predicted it sat in different systems the whole time.' },
+    HRIT:{ lean:'A new account onboards freelancers and staff on different terms, and every rule and approval gets worked around by hand.',
+           ent:'Several accounts ramp at once, and each freelancer and staff arrangement, rule, and approval gets handled manually with no template.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can act on a freelancer under staff rules that never applied.',
+         ent:'Bolt an AI assistant onto the HR stack and it can act on freelancers across accounts under staff rules that never applied.' }
+  },
+  'bpo-kpo':{
+    HR:{ lean:'A top-performing agent is about to quit, and the schedule strain, the missed incentive, and the dip in engagement were all in the system weeks earlier.',
+         ent:'A wave of agents leaves one site in a month, and the schedule strain, the pay signals, and the engagement drops that predicted it sat across separate systems.' },
+    HRIT:{ lean:'A new client ramps and shift rules, roster changes, and approvals all shift at once, handled by hand across constant tickets.',
+           ent:'Several clients ramp across sites at once, and every shift rule, roster, and approval gets reconciled by hand.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can schedule against a client SLA rule it never knew existed.',
+         ent:'Bolt an AI assistant onto the HR stack and it can schedule across sites against client SLA rules it never knew existed.' }
+  },
+  'staffing':{
+    HR:{ lean:'A billing recruiter is burning out and about to leave, and the activity drop, the missed comp, and the disengagement were all in the system weeks earlier.',
+         ent:'Several recruiters leave one desk in a quarter, and the activity drops, the pay gaps, and the burnout signals sat in different systems, never together.' },
+    HRIT:{ lean:'A new contract brings W-2, 1099, and contract workers under different rules, all reconciled by hand.',
+           ent:'Several contracts land at once, and every worker classification, rule, and approval gets worked manually across disconnected systems.' },
+    IT:{ lean:'Bolt an AI assistant onto the HR stack and it can act on a contractor under rules meant for employees.',
+         ent:'Bolt an AI assistant onto the HR stack and it can act on contractors across the business under rules meant for employees.' }
+  }
+};
+
+// ===== L2 tension =====
+// Narrative mode: a short pattern that generalizes the scene, in each voice\u2019s language.
+const PATTERN = {
+  biz:'In most organizations those signals sit unconnected until the resignation lands.',
+  ta: 'In most organizations you feel it only when the backfill req lands, already urgent.',
+  rew:'In most organizations the pay signal behind an exit is clear only in hindsight.',
+  lnd:'In most organizations the capability gap that drove it surfaces only after they have gone.',
+  ops:'In most organizations a change like this becomes a manual scramble no one gets ahead of.',
+  it: 'In most organizations bolted-on tools act with no real grasp of how the place runs.'
+};
+// Trigger mode: the full voice x segment problem, bridged. (dash-free)
+const PROBLEMS = {
+  biz:{
+    'it-services':'the skills your teams bill on shift faster than anyone tracks, and the signs a key engineer is leaving sit in different systems until they\u2019ve gone',
+    'consulting':'the moments that cost most, like a lead consultant leaving or a practice reorg, build quietly across staffing, comp and utilization before anyone connects them',
+    'fintech':'the scarce specialists the business runs on are costly to lose, and the early signs of flight risk sit unconnected across systems until the resignation lands',
+    'accounting':'a shrinking licensed team meets busy-season spikes, and the burnout signals that predict who leaves surface across systems too late to act on',
+    'legal':'associates and the relationships they carry leave faster than you can replace, and early signs like a comp gap or a manager change sit unconnected until the resignation lands',
+    'engineering':'keeping licensed people on the right projects gates growth, and as senior staff near the exit the signals sit unconnected until the expertise has already walked out',
+    'creative':'churn and burnout wear down the talent your accounts depend on, and the signs someone is leaving scatter across systems until the client tie is at risk',
+    'bpo-kpo':'frontline attrition runs hot enough to threaten SLAs, and the signals that predict a wave of exits sit across systems nobody reads in time',
+    'staffing':'your recruiters are the product, and the signs one is burning out or about to leave sit unconnected across systems until a desk goes quiet'
+  },
+  ta:{
+    'it-services':'you\u2019re staffing niche, fast-changing skills the moment a project lands, always reacting to reqs because the signals of what\u2019s coming sit in disconnected systems',
+    'consulting':'you\u2019re filling billable roles under deadline, always a step behind demand because the signals of where staffing is short sit in disconnected tools',
+    'fintech':'you\u2019re chasing scarce specialists against big tech, and without an early read on where gaps are forming you\u2019re always reacting to reqs, not ahead of them',
+    'accounting':'the licensed pipeline is thinning while busy-season demand spikes, and disconnected tools mean you see the shortfall only once it\u2019s already urgent',
+    'legal':'laterals and associates move on tight timelines, and the signals of an opening or a flight risk sit scattered until you\u2019re already scrambling to fill',
+    'engineering':'hiring licensed, project-ready people is slow, and without an early read on which projects will be short-staffed you\u2019re always reacting late',
+    'creative':'you\u2019re ramping teams across a churn-heavy, freelance-and-staff mix, always reacting because the signals of where you\u2019ll be short sit in disconnected tools',
+    'bpo-kpo':'hiring frontline at volume is relentless, and the attrition signals that should trigger a pipeline sit unread until seats are already empty',
+    'staffing':'your recruiters live in hiring tools all day, yet the signals of which desks are falling behind sit disconnected until the numbers already show it'
+  },
+  rew:{
+    'it-services':'pay has to track a fast-moving skills market, and the comp gaps that push your best engineers out surface across scattered data too late to fix',
+    'consulting':'comp tied to utilization and promotion is complex, and the pay signals that predict a regretted exit sit across disconnected systems until it\u2019s done',
+    'fintech':'equity and fast-moving benchmarks for scarce talent are hard to manage, and the pay gaps that trigger flight risk surface too late across scattered data',
+    'accounting':'busy-season pay and retention bonuses pile up, and the comp signals that predict who leaves sit across disconnected systems until they\u2019ve resigned',
+    'legal':'lockstep, merit and origination pay are intricate, and the comp gaps that push associates out surface across scattered data long after they mattered',
+    'engineering':'license and project premiums are hard to govern, and the pay signals that predict a regretted departure sit disconnected until the person is gone',
+    'creative':'retaining account and creative talent through churn is hard, and the pay gaps that trigger an exit surface across scattered data too late to act',
+    'bpo-kpo':'shift premiums and incentives change constantly, and the comp signals behind a wave of frontline exits sit unread until attrition spikes',
+    'staffing':'pay across permanent, contract and 1099 workers follows different rules, and the comp signals behind a recruiter leaving surface too late across scattered data'
+  },
+  lnd:{
+    'it-services':'AI is reshaping what your delivery teams must know, and the skills and learning signals that should drive reskilling sit unconnected until the gap is urgent',
+    'consulting':'developing consultants toward the next level on schedule matters, yet the skills and progression signals that guide mobility sit scattered across tools',
+    'fintech':'building scarce capability in-house beats buying it, but the skills signals that should trigger internal moves sit disconnected until you hire externally instead',
+    'accounting':'growing juniors toward licensure and keeping CPE current is constant, and the capability signals you need sit across systems until a gap forces your hand',
+    'legal':'developing associates and tracking CLE and practice-area skills is ongoing, yet the capability signals that show who\u2019s ready sit in disconnected systems',
+    'engineering':'keeping certifications current and skills project-ready is hard, and the signals of who needs what sit scattered until a project is already short the skill',
+    'creative':'keeping creative and account skills current against fast-shifting demand is tough, and the signals of an emerging skills gap sit unused until the work suffers',
+    'bpo-kpo':'ramping and upskilling frontline staff to hold quality is relentless, and the signals of who\u2019s falling behind sit unread until quality scores slip',
+    'staffing':'redeploying people into the next assignment depends on knowing their skills, yet those signals sit fragmented until the bench sits idle'
+  },
+  ops:{
+    'it-services':'onboarding project waves, tracking certifications and moving people across delivery centers turns every change with no template into a manual workaround',
+    'consulting':'every staffing change, rate update and engagement move with no template becomes a manual workaround, and the data partners rely on is never current',
+    'fintech':'fast scaling and shifting compliance rules turn each change with no template into a consultant ticket, and workforce data is never audit-ready',
+    'accounting':'busy-season surges, seasonal hires and CPE tracking pile no-template exceptions onto a team that can\u2019t configure the system itself',
+    'legal':'bar admissions, CLE, matter-based time and lateral onboarding generate a steady stream of no-template exceptions handled by hand',
+    'engineering':'license and certification tracking across jurisdictions, plus constant project moves, means every exception with no template breaks into a manual workaround',
+    'creative':'onboarding freelancers and staff on different terms, across projects, leaves every non-standard case as a manual workaround the team reconciles by hand',
+    'bpo-kpo':'hiring and onboarding at volume, shift scheduling and constant roster changes create a stream of no-template exceptions no manual process stays ahead of',
+    'staffing':'managing permanent, 1099 and contract workers across disconnected systems turns every non-standard case into a manual, compliance-exposed workaround'
+  },
+  it:{
+    'it-services':'supporting a global, project-based delivery workforce means bolting AI onto a fragmented HR stack where no system actually understands how the org works',
+    'consulting':'a fragmented HR and PSA stack gives no real-time view of a billable workforce, and every AI tool you add still lacks any grasp of how the firm works',
+    'fintech':'scaling fast in a regulated space, each AI tool you bolt onto patchwork systems acts without any real understanding of your org, policies or exceptions',
+    'accounting':'seasonal scaling and credential data spread across point tools mean any AI you add is guessing, with no system that grasps how the firm actually runs',
+    'legal':'client-confidentiality and matter-security demands sit awkwardly on fragmented HR systems, and bolted-on AI has no grasp of your policies or precedents',
+    'engineering':'license, certification and project data scattered across systems leave any AI you add guessing, with nothing that understands how the firm operates',
+    'creative':'a blended freelance-and-staff workforce on disconnected tools means any AI you bolt on has no real picture of how the agency actually runs',
+    'bpo-kpo':'supporting frontline scale across sites on legacy HR tech means bolted-on AI acts with no understanding of your org, policies or the exceptions that matter',
+    'staffing':'tracking multiple worker classifications across disconnected systems leaves any AI you add without a real grasp of how the business actually operates'
+  }
+};
+
+const BRIDGE = { HR:'On the people side, ', HRIT:'On the operations side, ', IT:'On the workforce side, ' };
+
+// ===== L3 Cortex resolution (capability proofs; scale + Gartner now live in L4) =====
+const PROOFS = {
+  reflex:      { tag:'Signal \u2192 reflex',   text:'Darwinbox Cortex senses those signals across HR and stages a response before the risk turns into a business problem.' },
+  compound:    { tag:'Compounding intelligence', text:'With Cortex, every resolution becomes reusable intelligence, so capability compounds instead of you adding headcount or point tools.' },
+  navigate:    { tag:'Navigate the undefined', text:'For a change with no template, Cortex reasons it through, builds the workflow, and checks it against your policies first.' },
+  contextGraph:{ tag:'Context graph',         text:'Cortex is the first HCM built on a context graph, a live map of your org and policies that agents reason over rather than a flat menu.' },
+  contextGraphB:{ tag:'Context graph',        text:'Cortex holds a living map of how your organization actually works, so its AI acts on real context instead of guessing at a flat menu.' },
+  mcpArch:     { tag:'API-first \u00b7 MCP',   text:'Cortex is API-first with an open gateway and the first MCP Server shipped by an HCM vendor, so you get one governed platform, not tool sprawl.' }
+};
+const PROOFPOOL = {
+  biz:{ lean:['reflex','compound'],           ent:['reflex','navigate'] },
+  ta: { lean:['reflex','compound'],           ent:['reflex','navigate'] },
+  rew:{ lean:['reflex','compound'],           ent:['reflex','compound'] },
+  lnd:{ lean:['reflex','compound'],           ent:['reflex','navigate'] },
+  ops:{ lean:['navigate','compound'],         ent:['navigate','compound'] },
+  it: { lean:['contextGraph','contextGraphB'], ent:['contextGraph','mcpArch'] }
+};
+
+// ===== L4 credibility (press-release figures; Gartner rotates by persona) =====
+const CRED = {
+  credChallenger:'With ~4.5 million users across 1,400 organizations and 130 countries, Darwinbox is a Challenger in the Gartner Magic Quadrant for Cloud HCM.',
+  credTA:        'With ~4.5 million users across 1,400 organizations in 130 countries, Darwinbox is a Gartner Magic Quadrant Leader for Talent Acquisition, top-rated for AI.',
+  credCompact:   'With ~4.5 million users across 1,400 organizations in 130 countries, Darwinbox is a Gartner Cloud HCM Challenger.'
+};
+
+// ===== L5 warm CTA (permission framing, this-week ask) =====
+const CTA = {
+  HR:  ['If this is something you would want to know more about, can we have an intro session sometime this week?',
+        'If that is worth exploring for [Company], can we find time for an intro session this week?'],
+  HRIT:['If this is worth pressure-testing, could we grab time for a short working session this week?',
+        'If this would help [Company], could we set up a short working session this week?'],
+  IT:  ['If this is worth a closer look, could we set up a short architecture chat this week?',
+        'If that is worth exploring for [Company], could we find time for an architecture chat this week?']
+};
+
+const TRIGGERS = {
+  none:      { label:'No specific trigger (industry pattern)', intro:'' },
+  funding:   { label:'Funding round',                intro:'Saw [Company] just closed [round]. Congrats on the raise.' },
+  manda:     { label:'M&A / acquisition',            intro:'With [Company]\u2019s recent [acquisition], there\u2019s a lot to bring onto one system.' },
+  expansion: { label:'New-market / multi-country expansion', intro:'Saw [Company] moving into [new markets], an exciting stretch.' },
+  newchro:   { label:'New CHRO / CPO',               intro:'Congrats on stepping into the people seat at [Company].' },
+  newcio:    { label:'New CIO / CTO',                intro:'Congrats on the [CIO/CTO] role at [Company].' },
+  rif:       { label:'RIF then rehire',              intro:'Noticed [Company] is rebuilding teams after a leaner year.' },
+  ipo:       { label:'IPO prep',                     intro:'With [Company] heading toward an IPO, workforce data and controls get real scrutiny.' }
+};
+
+const TITLES = {
+  chro:    { label:'CHRO / Chief People Officer', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'biz', altitude:'C-suite \u00b7 strategic & workforce outcomes' },
+  vphr:    { label:'VP HR', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'biz', altitude:'VP \u00b7 operational efficiency & delivery' },
+  hrdir:   { label:'Sr. Director / HR Director', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'biz', altitude:'Director \u00b7 team productivity & on-time delivery' },
+  srglobal:{ label:'Sr. Director, Global HR', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'biz', altitude:'Director \u00b7 multi-country consistency' },
+  ta:      { label:'Head of Talent Acquisition', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'ta', altitude:'Functional \u00b7 hiring outcomes' },
+  rewards: { label:'Head of Total Rewards', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'rew', altitude:'Functional \u00b7 comp & rewards outcomes' },
+  lnd:     { label:'Head of Learning & Development', roleNum:1, role:'Business-outcome owner', center:'HR', voice:'lnd', altitude:'Functional \u00b7 capability & mobility' },
+  hrops:   { label:'HR Shared Services / HR Operations', roleNum:2, role:'Make-it-work owner', center:'HRIT', voice:'ops', altitude:'Operational \u00b7 support load & clean data' },
+  hris:    { label:'Director HRMS / HR Systems', roleNum:2, role:'Make-it-work owner', center:'HRIT', voice:'ops', altitude:'Operational \u00b7 configuration & integrations' },
+  cio:     { label:'CIO / CTO', roleNum:3, role:'Architecture / risk / TCO owner', center:'IT', voice:'it', altitude:'CIO \u00b7 portfolio, risk & TCO' },
+  prog:    { label:'Digital / IT Transformation Lead', roleNum:3, role:'Architecture / risk / TCO owner', center:'IT', voice:'it', altitude:'Change \u00b7 adoption & innovation velocity' }
+};
+const TORDER = ['chro','vphr','hrdir','srglobal','ta','rewards','lnd','hrops','hris','cio','prog'];
+
+const BANNED = ['revolutionize','transform','game-changer','game changer','next-gen','best-in-class','world-class',
+  'leverage','synergy','unlock','supercharge','magical','evolve','ai-powered','modern','intuitive',
+  'hope this finds you well','quick question','quick chat','just circling back','touch base','hop on a call','pick your brain',
+  "i'm reaching out because",'reaching out because'];
+
+const wc = s => s.trim().split(/\s+/).filter(Boolean).length;
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const noDash = s => s.replace(/\s*\u2014\s*/g,', ').replace(/\s*\u2013\s*/g,', ');
+
+function generate(seg, sizeKey, titleKey, trigKey, variant, sender, signoff, customIntro, liveFresh){
+  const sz=SIZES[SI[sizeKey]], t=TITLES[titleKey], trig=TRIGGERS[trigKey||'none'];
+  variant=variant%2;
+  sender=(sender&&sender.trim())?sender.trim():'[Your name]';
+  signoff=signoff||'Business Development, Darwinbox';
+  const center=t.center, voice=t.voice, tier=sz.tier;
+  const live = customIntro && customIntro.trim();
+  const liveStale = !!(live && liveFresh===false);
+  const triggerLed = live ? !liveStale : !!(trig && trig.intro);
+
+  let L1, L2;
+  if (triggerLed){
+    L1 = live ? noDash(customIntro.trim()).replace(/\s+$/,'') : trig.intro;
+    L2 = BRIDGE[center] + PROBLEMS[voice][seg] + '.';
+  } else {
+    L1 = SCENES[seg][center][tier];
+    L2 = PATTERN[voice];
+  }
+  const pool = PROOFPOOL[voice][tier];
+  const proofKey = pool[variant % pool.length];
+  const L3 = PROOFS[proofKey].text;
+  const credKey = (voice==='ta'||voice==='lnd') ? 'credTA' : (center==='IT' ? 'credCompact' : 'credChallenger');
+  const L4 = CRED[credKey];
+  const L5 = CTA[center][variant % CTA[center].length];
+
+  const body = `Hi [First Name],\n\n${L1}\n\n${L2}\n\n${L3}\n\n${L4}\n\n${L5}\n\n${sender}\n${signoff}`;
+  const words = wc(`${L1} ${L2} ${L3} ${L4} ${L5}`);
+  return { subject:subjectFor(titleKey,variant), body, words,
+           roleNum:t.roleNum, role:t.role, center, altitude:t.altitude, voice,
+           mode: triggerLed?'trigger-led':'narrative-led', liveStale,
+           proofKey, proofTag:PROOFS[proofKey].tag, credKey,
+           triggerUsed: liveStale ? 'Trigger older than 90 days, led with the scenario'
+                      : (live ? 'Live account trigger'
+                      : (trig&&trig.intro ? trig.label : 'Industry scenario (no trigger)')),
+           problem:(triggerLed?PROBLEMS[voice][seg]:PATTERN[voice].replace(/\.$/,'')),
+           opener:L1, sizeLabel:sz.label, sizeTier:tier, segLabel:SEGMENTS[seg].label,
+           lines:[L1,L2,L3,L4,L5] };
+}
+
+const SUBJ = {
+  chro:['Workforce risk you see coming','HR that senses and acts'],
+  vphr:['HR that acts before problems','Fewer surprises across your workforce'],
+  hrdir:['Seeing workforce risk early','Consistent delivery fewer surprises'],
+  srglobal:['One signal across every entity','Workforce risk seen early everywhere'],
+  ta:['Hiring ahead of the need','Staffing signals you can act on'],
+  rewards:['Pay signals before they leave','Comp risk seen early'],
+  lnd:['Skills gaps seen early','Mobility from real signals'],
+  hrops:['Workflows that build themselves','No template still handled'],
+  hris:['One model fewer workarounds','Config without the tickets'],
+  cio:['HR AI that understands context','One context graph not sprawl'],
+  prog:['AI that acts on context','Beyond bolt-on HR agents']
+};
+function subjectFor(titleKey,variant){
+  let s=(SUBJ[titleKey]||['HR on one platform'])[variant%2];
+  return s.replace(/[!?$%:]/g,'').replace(/\s+/g,' ').trim().split(' ').slice(0,6).join(' ');
+}
+
+const bannedHits = t => { const x=t.toLowerCase(); return BANNED.filter(w=>x.includes(w)); };
+const LEAK = [/1,000|2,500|5,000|10,000|-person|headcount range/i,
+  /\baccounting\b|\bfintech\b|\bBPO\b|\bKPO\b|consulting firm|law firm|staffing firm/i];
+const leakHits = t => LEAK.filter(re=>re.test(t)).map(re=>re.source);
+
+/* ===== UI wiring ===== */
+let variant=0, current=null, appliedSig=null, liveTrigger=null;
+const $=id=>document.getElementById(id);
+const ids=['seg','size','title','trig','sender','signoff'];
+function fill(){
+  $('seg').innerHTML='<option value="" disabled selected>Choose sub-segment…</option>'+Object.entries(SEGMENTS).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+  $('size').innerHTML='<option value="" disabled selected>Choose headcount…</option>'+SIZES.map(s=>`<option value="${s.key}">${s.label} employees</option>`).join('');
+  $('title').innerHTML='<option value="" disabled selected>Choose title…</option>'+TORDER.map(k=>`<option value="${k}">${TITLES[k].label}</option>`).join('');
+  $('trig').innerHTML=Object.entries(TRIGGERS).map(([k,v])=>`<option value="${k}"${k==='none'?' selected':''}>${v.label}</option>`).join('');
+}
+function sig(){return JSON.stringify({s:$('seg').value,z:$('size').value,t:$('title').value,g:$('trig').value,v:variant,n:$('sender').value,o:$('signoff').value,l:liveTrigger?liveTrigger.intro:''});}
+function ready(){return $('seg').value&&$('size').value&&$('title').value;}
+function refreshState(){$('applyBtn').disabled=!ready();$('dirty').classList.toggle('show', appliedSig!==null && sig()!==appliedSig);}
+function setVariant(v){variant=v;$('vA').setAttribute('aria-pressed',v===0);$('vB').setAttribute('aria-pressed',v===1);refreshState();}
+function escp(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function hl(s){return escp(s).replace(/\[[^\]]+\]/g,m=>`<span class="merge">${m}</span>`);}
+function apply(){
+  if(!ready())return;
+  const r=generate($('seg').value,$('size').value,$('title').value,$('trig').value,variant,$('sender').value,$('signoff').value, liveTrigger?liveTrigger.intro:'', liveTrigger?liveTrigger.fresh:undefined);
+  current=r; appliedSig=sig(); refreshState();
+  $('copySubj').disabled=false;$('copyEmail').disabled=false;
+  $('draft').className='draft'; $('draft').innerHTML=hl(r.body);
+  $('subjOut').textContent=r.subject; $('subjWords').textContent=r.subject.split(/\s+/).length+'w';
+  $('rRole').innerHTML=`<span class="tag ${r.center==='IT'?'it':'hr'}">Role ${r.roleNum} · ${r.role}</span><br><span style="color:var(--muted)">${r.altitude}</span>`;
+  $('rTrig').innerHTML = liveTrigger ? ('Live account trigger'+(liveTrigger.meta?(' \u00b7 '+escp(liveTrigger.meta)):'')+(liveTrigger.fresh===false?' \u00b7 older, flagged':'')) : escp(r.triggerUsed);
+  $('rProb').textContent=cap(r.problem)+'.';
+  $('rSeg').innerHTML=`<span style="color:var(--muted)">Opening line set by headcount (${r.sizeLabel}); the problem, written for ${r.segLabel}, sets up the Cortex value; the proof is matched to persona and size. When a trigger is set it bridges into the problem. Neither headcount nor segment is named.</span>`;
+  $('rProof').innerHTML=`<span class="tag ${r.center==='IT'?'it':'hr'}">${r.proofTag}</span> ${r.ctaFamily==='it'?'Architecture chat':'Short intro session'} CTA`;
+  const subOk=r.subject.split(/\s+/).length<=6 && !/[!?$%:]/.test(r.subject);
+  const wcOk=r.words>=85&&r.words<=105, wcSoft=r.words>=80&&r.words<=110;
+  const ban=bannedHits(r.lines.join(' ')), leak=leakHits(r.lines.join(' '));
+  const bridged = !!liveTrigger || ($('trig').value && $('trig').value!=='none');
+  const checks=[
+    [subOk,'Subject ≤ 6 words, no spam punctuation'],
+    [wcSoft,(wcOk?'Body in 85–105 word target':'Body '+r.words+'w')],
+    [leak.length===0,'No headcount band or sub-segment named'],
+    [true, (r.mode==='trigger-led') ? 'Trigger leads, bridges into the problem' : 'Sub-segment scenario opens the email'],
+    [true,'Cortex proof ('+r.proofTag+') + credibility line'],
+    [ban.length===0, ban.length?'Banned phrase: '+ban.join(', '):'No banned hype words'],
+    [true,'Soft, resonance-based CTA · no calendar slot']
+  ];
+  $('checks').innerHTML=checks.map(c=>`<li><span class="dot ${c[0]?'ok':'warn'}">${c[0]?'✓':'!'}</span><span>${c[1]}</span></li>`).join('');
+  $('gW').textContent=r.words;
+  const pct=Math.max(8,Math.min(100,Math.round(((r.words-70)/(105-70))*100)));
+  $('ring').style.setProperty('--p',pct);
+  $('gMsg').innerHTML=wcOk?'<b style="color:var(--green)">on target</b>':(wcSoft?'<b>acceptable</b> ('+r.words+'w)':'<b style="color:var(--amber)">adjust length</b>');
+}
+function copy(which){
+  if(!current)return;const text=which==='subj'?current.subject:current.body;
+  navigator.clipboard.writeText(text).then(()=>toast(which==='subj'?'Subject copied':'Email copied'))
+   .catch(()=>{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Copied');}catch(e){}document.body.removeChild(ta);});
+}
+let tT;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1400);}
+fill();
+ids.forEach(id=>$(id).addEventListener('input',refreshState));
+$('vA').addEventListener('click',()=>setVariant(0));
+$('vB').addEventListener('click',()=>setVariant(1));
+$('applyBtn').addEventListener('click',apply);
+$('copySubj').addEventListener('click',()=>copy('subj'));
+$('copyEmail').addEventListener('click',()=>copy('email'));
+
+/* ===== Account intelligence — live trigger study ===== */
+// OPTIONAL hosted backend. Leave blank → live research uses Claude's API (works only inside claude.ai).
+// After deploying the included serverless function (see ps-trigger-backend), paste its URL here and re-host;
+// then live research works for your whole team on your hosted URL. TRIGGER_KEY is an optional shared secret.
+const TRIGGER_ENDPOINT = "";   // e.g. "https://ps-triggers.yourname.workers.dev"
+const TRIGGER_KEY = "";        // e.g. "a-long-random-string" (must match the backend's SHARED_SECRET)
+
+function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function bannedInIntro(s){const x=(s||'').toLowerCase();return BANNED.filter(w=>x.includes(w));}
+function setStudyBtn(loading){
+  const b=$('studyBtn');
+  if(loading){b.disabled=true;$('studyLabel').innerHTML='<span class="spin"></span>';}
+  else{b.disabled=!$('acctCompany').value.trim();$('studyLabel').textContent='Study';}
+}
+function statusMsg(m){const s=$('astatus');s.textContent=m||'';s.classList.toggle('show',!!m);}
+function showManual(v){$('manual').classList.toggle('show',v);}
+function parseJSON(t){if(!t)return null;let s=t.replace(/```json/gi,'').replace(/```/g,'').trim();const a=s.indexOf('{'),b=s.lastIndexOf('}');if(a<0||b<0)return null;try{return JSON.parse(s.slice(a,b+1));}catch(e){return null;}}
+function buildPrompt(company,domain,asOf){
+  return 'You are a research assistant for an SDR at Darwinbox (an enterprise HR platform). Use web search to find RECENT, VERIFIABLE account triggers for the company below that an SDR could reference in cold B2B outreach. Today is '+asOf+'.\n\n'
+    +'Company: '+company+(domain?(' (website: '+domain+')'):'')+'\n\n'
+    +'Find up to 3 of the most relevant, recent triggers from: funding rounds, mergers/acquisitions, executive changes (especially CHRO/CPO or CIO/CTO), market or geographic expansion, layoffs-then-rehiring, IPO/S-1 filings, notable earnings, or major product launches. For EACH trigger you MUST have a real source URL and an event date from a search result. Never guess or fabricate; if you cannot verify it, omit it. Set "fresh" to true only if the event date is within 90 days of today.\n\n'
+    +'For each trigger write a cold-email opening line ("email_intro"): at most 18 words, natural and specific, naming the company and the concrete detail. It will be followed by a sentence that pivots to the workforce/people implication, so acknowledge the trigger and set up that pivot rather than closing the thought. If the trigger involves another vendor or partner, acknowledge it positively and never criticize it. Do NOT use any of these words/phrases: revolutionize, transform, leverage, unlock, modern, hope this finds you well, quick question, quick chat, circling back, touch base, hop on a call, pick your brain, reaching out because. No exclamation marks, and no em dashes or en dashes (use commas or periods instead).\n\n'
+    +'Respond with ONLY a JSON object (no markdown, no commentary) of exactly this shape:\n'
+    +'{"company":"","as_of":"'+asOf+'","no_fresh_trigger":false,"triggers":[{"type":"funding|manda|newchro|newcio|expansion|rif|ipo|earnings|launch|other","headline":"","date":"YYYY-MM-DD","fresh":true,"confidence":"high|medium|low","source_name":"","source_url":"","email_intro":""}],"note":""}\n'
+    +'If you find no credible, recent trigger, return no_fresh_trigger=true, an empty triggers array, and a one-line honest note.';
+}
+async function studyAccount(){
+  const company=$('acctCompany').value.trim(); if(!company)return;
+  const domain=$('acctDomain').value.trim();
+  $('tcards').innerHTML=''; setStudyBtn(true);
+  statusMsg('Researching '+company+' — checking recent sources. This can take up to ~30s…');
+  const asOf=new Date().toISOString().slice(0,10);
+  try{
+    let obj;
+    if (TRIGGER_ENDPOINT){
+      // Hosted mode: backend holds the key, runs search+validate, returns the contract JSON directly.
+      const res=await fetch(TRIGGER_ENDPOINT,{ method:"POST",
+        headers:Object.assign({"Content-Type":"application/json"}, TRIGGER_KEY?{"X-PS-Key":TRIGGER_KEY}:{}),
+        body:JSON.stringify({company:company, domain:domain, asOf:asOf}) });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      obj=await res.json();
+    } else {
+      // In-Claude mode: call Claude's API directly (only works inside claude.ai).
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ model:"claude-sonnet-4-6", max_tokens:1024,
+          messages:[{role:"user",content:buildPrompt(company,domain,asOf)}],
+          tools:[{type:"web_search_20250305",name:"web_search"}] })
+      });
+      if(!res.ok) throw new Error('HTTP '+res.status);
+      const data=await res.json();
+      const text=(data.content||[]).filter(b=>b&&b.type==='text').map(b=>b.text).join('\n');
+      obj=parseJSON(text);
+    }
+    if(!obj) throw new Error('parse');
+    setStudyBtn(false);
+    renderTriggers(obj,company);
+  }catch(e){
+    setStudyBtn(false);
+    statusMsg(TRIGGER_ENDPOINT
+      ? 'The research backend didn\u2019t respond. Check the endpoint, or paste a verified trigger below — it works anywhere.'
+      : 'Live research runs inside Claude (where the tool can reach Claude\u2019s API) and isn\u2019t reachable here. Paste a verified trigger below instead — it works anywhere.');
+    showManual(true);
+  }
+}
+function renderTriggers(obj,company){
+  const list=(obj&&obj.triggers)||[];
+  if((obj&&obj.no_fresh_trigger)||list.length===0){
+    statusMsg('No fresh, verifiable trigger found for '+company+' in the last 90 days — that\u2019s fine. The email runs on the industry pattern. '+((obj&&obj.note)?('('+obj.note+')'):''));
+    $('tcards').innerHTML=''; return;
+  }
+  statusMsg('Found '+list.length+' candidate trigger'+(list.length>1?'s':'')+' for '+company+'. Pick one to fold into the email — open the source to verify before sending.');
+  $('tcards').innerHTML=list.map((t,i)=>{
+    const fresh=!!t.fresh, intro=(t.email_intro||'').trim(), bw=bannedInIntro(intro), conf=(t.confidence||'').toLowerCase();
+    const src=t.source_url?('<a href="'+escAttr(t.source_url)+'" target="_blank" rel="noopener">'+escp(t.source_name||'source')+'</a>'):escp(t.source_name||'');
+    return '<div class="tcard" data-i="'+i+'">'
+      +'<div class="tt"><span class="ty">'+escp(t.type||'trigger')+'</span>'
+      +'<span class="badge '+(fresh?'fresh':'old')+'">'+(fresh?'Fresh \u00b7 \u226490d':'Older \u00b7 flag')+'</span>'
+      +(conf?('<span class="badge conf">'+escp(conf)+' confidence</span>'):'')+'</div>'
+      +'<p class="hl">'+escp(t.headline||'')+'</p>'
+      +'<p class="intro">'+escp(intro)+'</p>'
+      +(bw.length?('<p class="warnline">Heads-up: this line contains \u201c'+escp(bw.join(', '))+'\u201d \u2014 edit before sending.</p>'):'')
+      +'<p class="meta">'+(t.date?('Dated '+escp(t.date)):'')+((t.date&&src)?' \u00b7 ':'')+(src||'')+'</p>'
+      +'<button class="useBtn" data-i="'+i+'">Use this trigger in the email</button>'
+      +'</div>';
+  }).join('');
+  $('tcards').querySelectorAll('.useBtn').forEach(b=>b.addEventListener('click',()=>{
+    const t=list[+b.dataset.i]; const meta=[t.source_name||'',t.date||''].filter(Boolean).join(' \u00b7 ');
+    setLive((t.email_intro||'').trim(), meta, t.fresh);
+    $('tcards').querySelectorAll('.tcard').forEach(c=>c.classList.toggle('sel',+c.dataset.i===+b.dataset.i));
+  }));
+}
+function setLive(intro,meta,fresh){
+  if(!intro)return;
+  liveTrigger={intro:intro, meta:meta||'', fresh:(fresh!==false)};
+  $('liveOnTxt').innerHTML='Live trigger active'+(meta?(' \u00b7 '+escp(meta)):'')+(fresh===false?' \u00b7 <b>older, flagged</b>':'');
+  $('liveOn').classList.add('show');
+  if(ready()) apply(); else refreshState();
+}
+function clearLive(){ liveTrigger=null; $('liveOn').classList.remove('show'); $('tcards').querySelectorAll('.tcard').forEach(c=>c.classList.remove('sel')); if(ready()) apply(); else refreshState(); }
+
+$('acctCompany').addEventListener('input',()=>setStudyBtn(false));
+$('acctCompany').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();studyAccount();}});
+$('studyBtn').addEventListener('click',studyAccount);
+$('liveClr').addEventListener('click',clearLive);
+$('manualToggle').addEventListener('click',e=>{e.preventDefault();showManual(!$('manual').classList.contains('show'));});
+$('manualTog').addEventListener('click',()=>showManual(false));
+$('manualUse').addEventListener('click',()=>{
+  const v=$('manualText').value.trim(); if(!v)return;
+  const bw=bannedInIntro(v);
+  setLive(v,'pasted manually',true);
+  statusMsg(bw.length?('Using your pasted line. Heads-up: it contains \u201c'+bw.join(', ')+'\u201d — consider editing.'):'Using your pasted trigger line in the email.');
+});
+setStudyBtn(false);
+
+refreshState();
+
+
+</script>
+</body>
+</html>
